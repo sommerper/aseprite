@@ -1082,6 +1082,9 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
 
 void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
 {
+  if (m_canvasRotation.drawSpriteClipped(this, updateRegion))
+    return;
+
   Region screenRegion;
   getDrawableRegion(screenRegion, kCutTopWindows);
 
@@ -1112,6 +1115,8 @@ void Editor::drawMask(Graphics* g)
 
 void Editor::drawMaskBoundaries(ui::Graphics* g, doc::MaskBoundaries& segs, const int antsOffset)
 {
+  CanvasRotation::DirectDraw rotated(this, g);
+
   gfx::Point pt = mainTilePosition();
   pt.x = m_padding.x + m_proj.applyX(pt.x);
   pt.y = m_padding.y + m_proj.applyY(pt.y);
@@ -1600,10 +1605,10 @@ gfx::Point Editor::autoScroll(const ui::MouseMessage* msg, const AutoScroll dir)
 
     gfx::Point scroll = view->viewScroll();
     if (dir == AutoScroll::MouseDir) {
-      scroll += delta;
+      scroll += m_canvasRotation.toLogicalDelta(delta);
     }
     else {
-      scroll -= deltaScroll;
+      scroll -= m_canvasRotation.toLogicalDelta(deltaScroll);
     }
     setEditorScroll(scroll);
 
@@ -1645,6 +1650,8 @@ bool Editor::isAutoSelectLayer()
 
 gfx::Point Editor::screenToEditor(const gfx::Point& pt) const
 {
+  if (m_canvasRotation.active())
+    return m_canvasRotation.screenToEditor(this, pt);
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
@@ -1654,6 +1661,8 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt) const
 
 gfx::Point Editor::screenToEditorCeiling(const gfx::Point& pt) const
 {
+  if (m_canvasRotation.active())
+    return m_canvasRotation.screenToEditorCeiling(this, pt);
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
@@ -1663,6 +1672,8 @@ gfx::Point Editor::screenToEditorCeiling(const gfx::Point& pt) const
 
 gfx::PointF Editor::screenToEditorF(const gfx::Point& pt) const
 {
+  if (m_canvasRotation.active())
+    return m_canvasRotation.screenToEditorF(this, pt);
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
@@ -1672,6 +1683,8 @@ gfx::PointF Editor::screenToEditorF(const gfx::Point& pt) const
 
 Point Editor::editorToScreen(const gfx::Point& pt) const
 {
+  if (m_canvasRotation.active())
+    return m_canvasRotation.editorToScreen(this, pt);
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
@@ -1681,6 +1694,8 @@ Point Editor::editorToScreen(const gfx::Point& pt) const
 
 gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt) const
 {
+  if (m_canvasRotation.active())
+    return m_canvasRotation.editorToScreenF(this, pt);
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Point scroll = view->viewScroll();
@@ -1690,16 +1705,22 @@ gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt) const
 
 Rect Editor::screenToEditor(const Rect& rc) const
 {
+  if (m_canvasRotation.active())
+    return m_canvasRotation.screenToEditor(this, rc);
   return gfx::Rect(screenToEditor(rc.origin()), screenToEditorCeiling(rc.point2()));
 }
 
 Rect Editor::editorToScreen(const Rect& rc) const
 {
+  if (m_canvasRotation.active())
+    return m_canvasRotation.editorToScreen(this, rc);
   return gfx::Rect(editorToScreen(rc.origin()), editorToScreen(rc.point2()));
 }
 
 gfx::RectF Editor::editorToScreenF(const gfx::RectF& rc) const
 {
+  if (m_canvasRotation.active())
+    return m_canvasRotation.editorToScreenF(this, rc);
   return gfx::RectF(editorToScreenF(rc.origin()), editorToScreenF(rc.point2()));
 }
 
@@ -2254,6 +2275,9 @@ bool Editor::onProcessMessage(Message* msg)
 
         updateToolByTipProximity(mouseMsg->pointerType());
 
+        if (CanvasRotation::onDoubleClick(this, mouseMsg))
+          return true;
+
         bool used = m_state->onDoubleClick(this, mouseMsg);
         if (used)
           return true;
@@ -2446,6 +2470,9 @@ void Editor::onPaint(ui::PaintEvent& ev)
     }
   }
 
+  if (m_canvasRotation.paint(this, ev))
+    return;
+
   Graphics* g = ev.graphics();
   gfx::Rect rc = clientBounds();
   auto theme = SkinTheme::get(this);
@@ -2515,6 +2542,7 @@ void Editor::onInvalidateRegion(const gfx::Region& region)
 // When the current tool is changed
 void Editor::onActiveToolChange(tools::Tool* tool)
 {
+  m_canvasRotation.onActiveToolChange(this, tool);
   m_state->onActiveToolChange(this, tool);
   if (hasMouse()) {
     updateStatusBar();
@@ -2814,6 +2842,11 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
     case ZoomBehavior::MOUSE:  screenPos = mousePos; break;
   }
 
+  if (m_canvasRotation.active()) {
+    m_canvasRotation.zoomAt(this, zoom, screenPos, screenToEditorF(screenPos));
+    return;
+  }
+
   // Limit zooming screen position to the visible sprite bounds (we
   // use canvasSize() because if the tiled mode is enabled, we need
   // extra space for the zoom)
@@ -3056,6 +3089,9 @@ void Editor::notifyZoomChanged()
 
 bool Editor::checkForScroll(ui::MouseMessage* msg)
 {
+  if (CanvasRotation::startGesture(this, msg))
+    return true;
+
   tools::Ink* clickedInk = getCurrentEditorInk();
 
   // Start scroll loop

@@ -301,6 +301,14 @@ bool DrawingState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 
 bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
+  // Shift+Space (rotate canvas) must win over the "Shift on freehand" line preview
+  if (m_type == DrawingType::LineFreehand && !m_mousePressedReceived &&
+      CanvasRotation::isQuicktoolPressed(msg)) {
+    m_toolLoopManager->cancel();
+    destroyLoopIfCanceled(editor);
+    return false;
+  }
+
   Command* command = NULL;
   Params params;
   if (KeyboardShortcuts::instance()->getCommandFromKeyMessage(msg, &command, &params)) {

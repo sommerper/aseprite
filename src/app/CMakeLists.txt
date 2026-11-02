@@ -625,6 +625,7 @@ target_sources(app-lib PRIVATE
   ui/drop_down_button.cpp
   ui/dynamics_popup.cpp
   ui/editor/brush_preview.cpp
+  ui/editor/canvas_rotation.cpp
   ui/editor/delayed_mouse_move.cpp
   ui/editor/dragging_value_state.cpp
   ui/editor/drawing_state.cpp

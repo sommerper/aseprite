@@ -17,6 +17,7 @@
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/color_source.h"
 #include "app/ui/editor/brush_preview.h"
+#include "app/ui/editor/canvas_rotation.h"
 #include "app/ui/editor/editor_hit.h"
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
@@ -328,6 +329,9 @@ public:
 
   static void registerCommands();
 
+  CanvasRotation& canvasRotation() { return m_canvasRotation; }
+  const CanvasRotation& canvasRotation() const { return m_canvasRotation; }
+
 protected:
   bool onProcessMessage(ui::Message* msg) override;
   void onSizeHint(ui::SizeHintEvent& ev) override;
@@ -360,6 +364,8 @@ protected:
   void onActiveToolChange(tools::Tool* tool) override;
 
 private:
+  friend class CanvasRotation;
+
   enum class Flashing { None, WithFlashExtraCel, WaitingDeferedPaint };
 
   void setStateInternal(const EditorStatePtr& newState);
@@ -524,6 +530,8 @@ private:
   // same document can show the same preview image/stroke being drawn
   // (search for Render::setPreviewImage()).
   static std::unique_ptr<EditorRender> m_renderEngine;
+
+  CanvasRotation m_canvasRotation;
 
   // Used for selection tool feedback.
   // TODO move this to SelectionToolLoopImpl

@@ -403,6 +403,7 @@
         <part id="tool_hand" x="176" y="32" w="16" h="16"/>
         <part id="tool_move" x="192" y="32" w="16" h="16"/>
         <part id="tool_zoom" x="208" y="32" w="16" h="16"/>
+        <part id="tool_rotate_canvas" x="99" y="243" w="10" h="10"/>
         <part id="tool_slice" x="224" y="32" w="16" h="16"/>
         <part id="tool_paint_bucket" x="144" y="48" w="16" h="16"/>
         <part id="tool_gradient" x="160" y="48" w="16" h="16"/>

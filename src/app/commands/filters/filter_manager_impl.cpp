@@ -370,6 +370,8 @@ void FilterManagerImpl::flush()
                                                         editor->projection().removeY(h + 2))));
 
       gfx::Region reg1(rect);
+      if (editor->canvasRotation().isRotated())
+        reg1 = gfx::Region(editor->bounds());
       editor->expandRegionByTiledMode(reg1, true);
 
       gfx::Region reg2;

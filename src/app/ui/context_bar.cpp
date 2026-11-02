@@ -2085,6 +2085,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
 
   addChild(m_sliceFields = new SliceFields);
   addChild(m_fontSelector = new FontSelector(this));
+  CanvasRotation::addResetButton(this, tooltipManager);
 
   setupTooltips(tooltipManager);
 

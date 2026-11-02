@@ -86,7 +86,8 @@ void EditorView::onResize(ResizeEvent& ev)
         // This keeps the same scroll position for the editor
         gfx::Point newPos = editor->editorToScreen(gfx::Point(0, 0));
         gfx::Point oldScroll = viewScroll();
-        editor->setEditorScroll(oldScroll + newPos - oldPos);
+        const gfx::Point delta = editor->canvasRotation().toLogicalDelta(newPos - oldPos);
+        editor->setEditorScroll(oldScroll + delta);
         break;
       }
       case KeepCenter: editor->centerInSpritePoint(oldPos); break;
@@ -113,6 +114,10 @@ void EditorView::onScrollRegion(ui::ScrollRegionEvent& ev)
     gfx::Region invalidRegion;
     editor->getInvalidDecoratoredRegion(invalidRegion);
     region.createSubtraction(region, invalidRegion);
+
+    // Moving screen pixels doesn't work for a rotated canvas
+    if (editor->canvasRotation().isRotated())
+      region.clear();
   }
 }
 

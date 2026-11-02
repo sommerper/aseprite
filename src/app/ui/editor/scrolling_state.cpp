@@ -55,7 +55,7 @@ bool ScrollingState::onMouseMove(Editor* editor, MouseMessage* msg)
   }
 #endif
 
-  scroll -= newPos - m_oldPos;
+  scroll -= editor->canvasRotation().toLogicalDelta(newPos - m_oldPos);
   m_oldPos = newPos;
 
   editor->setEditorScroll(scroll);

@@ -631,6 +631,7 @@
       <key tool="eyedropper" shortcut="Alt" />
       <key tool="move" shortcut="Ctrl" mac="Cmd" />
       <key tool="hand" shortcut="Space" />
+      <key tool="rotate_canvas" shortcut="Shift+Space" />
     </quicktools>
 
     <!-- Special keyboard shortcuts for specific actions -->
@@ -1399,6 +1400,10 @@
             controller="freehand" />
       <tool id="hand"
             text="@.hand"
+            ink="scroll"
+            controller="freehand" />
+      <tool id="rotate_canvas"
+            text="@.rotate_canvas"
             ink="scroll"
             controller="freehand" />
     </group>

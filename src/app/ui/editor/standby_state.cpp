@@ -1030,6 +1030,9 @@ void StandbyState::Decorator::getInvalidDecoratoredRegion(Editor* editor, gfx::R
 
 bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handles)
 {
+  if (editor->canvasRotation().isRotated())
+    return false;
+
   // Draw transformation handles (if the mask is visible and isn't frozen).
   if (editor->isActive() && editor->editorFlags() & Editor::kShowSymmetryLine &&
       Preferences::instance().symmetryMode.enabled()) {

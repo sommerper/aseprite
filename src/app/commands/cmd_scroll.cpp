@@ -55,7 +55,7 @@ void ScrollCommand::onExecute(Context* context)
   gfx::Point scroll = view->viewScroll();
   gfx::Point delta = m_moveThing.getDelta(context);
 
-  editor->setEditorScroll(scroll + delta);
+  editor->setEditorScroll(scroll + editor->canvasRotation().toLogicalDelta(delta));
 }
 
 std::string ScrollCommand::onGetFriendlyName() const

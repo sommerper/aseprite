@@ -445,6 +445,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
       const render::Projection& proj = m_editor->projection();
 
       if (m_uiLayer->surface()) {
+        const CanvasRotation::Unrotated unrotated(m_editor->canvasRotation());
         gfx::Rect layerBounds = m_uiLayer->surface()->bounds();
 
         if (m_type & SELECTION_CROSSHAIR) {
@@ -464,6 +465,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
           }
         }
 
+        layerBounds = m_editor->canvasRotation().centerToPhysical(m_editor, layerBounds);
         m_uiLayer->setPosition(layerBounds.origin());
         m_uiLayer->setClipRegion(m_clippingRegion);
       }
@@ -475,6 +477,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
       if (m_cachedType != m_type || m_cachedBrushGen != m_brushGen) {
         cached = false;
       }
+      if (m_editor->canvasRotation().isRotated())
+        cached = false;
 
       // Here we re-use the cached surface
       if (!cached && m_uiLayer->surface()) {
@@ -501,6 +505,10 @@ void BrushPreview::show(const gfx::Point& screenPos)
             pos = gfx::Point(layerBounds.w / 2 - proj.applyX(layerBounds.w % 2),
                              layerBounds.h / 2 - proj.applyY(layerBounds.h % 2));
           }
+          const CanvasRotation::RotateOutline rotated(m_editor,
+                                                      &g,
+                                                      pos,
+                                                      tilemapMode == TilemapMode::Pixels);
           strokeBrushBoundaries(&g, pos, paint);
         }
 
@@ -619,7 +627,7 @@ bool BrushPreview::createUILayer(const gfx::Rect& brushBounds)
   }
   else if (m_type & BRUSH_BOUNDARIES) {
     gfx::Size brushSize(proj.applyX(brushBounds.w + 2), proj.applyY(brushBounds.h + 2));
-    sizeHint = brushSize;
+    sizeHint = m_editor->canvasRotation().outlineSize(brushSize);
   }
 
   if (sizeHint.w == 0 || sizeHint.h == 0)

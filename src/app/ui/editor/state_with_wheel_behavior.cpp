@@ -273,7 +273,7 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
         }
       }
 
-      editor->setEditorScroll(scroll + delta);
+      editor->setEditorScroll(scroll + editor->canvasRotation().toLogicalDelta(delta));
       break;
     }
 

@@ -46,6 +46,7 @@
 #include "app/ui/hex_color_entry.h"
 #include "app/ui/input_chain.h"
 #include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/lospec_panel.h"
 #include "app/ui/palette_popup.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -228,6 +229,7 @@ ColorBar::ColorBar(TooltipManager* tooltipManager)
   m_palettePlaceholder.addChild(&m_splitterPalTil);
   m_palettePlaceholder.addChild(&m_remapPalButton);
   m_palettePlaceholder.addChild(&m_remapTilesButton);
+  m_palettePlaceholder.addChild(create_lospec_panel(tooltipManager));
   m_splitter.setId("palette_spectrum_splitter");
   m_splitter.setPosition(80);
   m_splitter.setExpansive(true);

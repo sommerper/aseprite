@@ -626,6 +626,7 @@ target_sources(app-lib PRIVATE
   ui/dynamics_popup.cpp
   ui/editor/brush_preview.cpp
   ui/editor/canvas_rotation.cpp
+  ui/lospec_panel.cpp
   ui/editor/delayed_mouse_move.cpp
   ui/editor/dragging_value_state.cpp
   ui/editor/drawing_state.cpp
@@ -751,6 +752,10 @@ if(WIN32)
     win/file_associations.cpp
     win/thumbnails.cpp)
 endif()
+
+# The Lospec panel reads LOSPEC_API_KEY from this file at runtime
+set_source_files_properties(ui/lospec_panel.cpp PROPERTIES
+  COMPILE_DEFINITIONS "LOSPEC_ENV_FILE=\"${CMAKE_SOURCE_DIR}/.env\"")
 
 if(ENABLE_NEWS)
   target_compile_definitions(app-lib PUBLIC -DENABLE_NEWS)

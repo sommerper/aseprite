@@ -116,7 +116,8 @@ render::Zoom zoom_from_scale(double scale)
 // width, so ui::Box would give it the whole bar.)
 class RightAlign : public Widget {
 public:
-  explicit RightAlign(Widget* widget) : m_widget(widget) {}
+  // Transparent: it paints nothing, so the context bar must paint behind it.
+  explicit RightAlign(Widget* widget) : m_widget(widget) { setTransparent(true); }
 
 private:
   void onSizeHint(SizeHintEvent& ev) override

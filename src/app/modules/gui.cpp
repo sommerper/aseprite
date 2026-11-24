@@ -698,6 +698,15 @@ bool CustomizedGuiManager::onEnqueueMouseDown(MouseMessage* mouseMsg)
 
 bool CustomizedGuiManager::processKey(Message* msg)
 {
+  // Esc first leaves the reference/other layers flip view (before any
+  // command bound to Esc, e.g. by extensions); the next Esc works as usual.
+  if (msg->type() == kKeyDownMessage &&
+      static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc &&
+      msg->modifiers() == kKeyNoneModifier && Editor::refView() != render::RefView::All) {
+    Editor::setRefView(render::RefView::All);
+    return true;
+  }
+
   const KeyboardShortcuts* keys = KeyboardShortcuts::instance();
   const KeyPtr key = keys->findBestKeyFromMessage(msg);
   if (!key)

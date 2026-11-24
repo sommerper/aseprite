@@ -37,6 +37,11 @@ void SimpleRenderer::setRefOverlayOpacity(const int opacity)
   m_render.setRefOverlayOpacity(opacity);
 }
 
+void SimpleRenderer::setRefView(const render::RefView refView)
+{
+  m_render.setRefView(refView);
+}
+
 void SimpleRenderer::setNewBlendMethod(const bool newBlend)
 {
   m_render.setNewBlend(newBlend);

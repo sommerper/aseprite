@@ -140,6 +140,14 @@ std::unique_ptr<MaskBoundaries> Editor::m_selectionToolMaskBoundaries = nullptr;
 
 // static
 std::unique_ptr<EditorRender> Editor::m_renderEngine = nullptr;
+render::RefView Editor::m_refView = render::RefView::All;
+
+// static
+void Editor::setRefView(const render::RefView refView)
+{
+  m_refView = refView;
+  app_refresh_screen();
+}
 
 Editor::Editor(Doc* document, EditorFlags flags, EditorStatePtr state)
   : Widget(Editor::Type())
@@ -702,6 +710,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
       (pref.editor.refOverlayEnabled() && !(m_docView && m_docView->isPreview())) ?
         (std::clamp(pref.editor.refOverlayOpacity(), 0, 100) * 255 + 50) / 100 :
         255);
+    m_renderEngine->setRefView((m_docView && m_docView->isPreview()) ? render::RefView::All :
+                                                                        m_refView);
     m_renderEngine->setupBackground(m_document, IMAGE_RGB);
     m_renderEngine->disableOnionskin();
 

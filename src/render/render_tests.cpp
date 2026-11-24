@@ -263,6 +263,77 @@ TEST(Render, RefOverlayOpacityWithReferenceInsideGroup)
   test_ref_overlay_opacity(true, true);
 }
 
+TEST(Render, RefViewShowsOnlyReferenceOrOnlyOtherLayers)
+{
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
+  doc->sprites().add(Sprite::MakeStdSprite(ImageSpec(ColorMode::RGB, 2, 1)));
+  Sprite* sprite = doc->sprite();
+
+  // Normal layer: red at x=0
+  Image* normal = sprite->root()->firstLayer()->cel(0)->image();
+  clear_image(normal, 0);
+  put_pixel(normal, 0, 0, rgba(255, 0, 0, 255));
+
+  // Reference layer: blue at x=1
+  auto* ref = new LayerImage(sprite);
+  sprite->root()->addLayer(ref);
+  ref->setReference(true);
+  ImageRef refImage(Image::create(IMAGE_RGB, 2, 1));
+  clear_image(refImage.get(), 0);
+  put_pixel(refImage.get(), 1, 0, rgba(0, 0, 255, 255));
+  ref->addCel(new Cel(0, refImage));
+
+  std::unique_ptr<Image> dst(Image::create(IMAGE_RGB, 2, 1));
+  Render render;
+  render.setRefLayersVisiblity(true);
+
+  render.renderSprite(dst.get(), sprite, frame_t(0));
+  EXPECT_EQ(rgba(255, 0, 0, 255), get_pixel(dst.get(), 0, 0));
+  EXPECT_EQ(rgba(0, 0, 255, 255), get_pixel(dst.get(), 1, 0));
+
+  render.setRefView(RefView::RefOnly);
+  render.renderSprite(dst.get(), sprite, frame_t(0));
+  EXPECT_EQ(0, rgba_geta(get_pixel(dst.get(), 0, 0)));
+  EXPECT_EQ(rgba(0, 0, 255, 255), get_pixel(dst.get(), 1, 0));
+
+  render.setRefView(RefView::OthersOnly);
+  render.renderSprite(dst.get(), sprite, frame_t(0));
+  EXPECT_EQ(rgba(255, 0, 0, 255), get_pixel(dst.get(), 0, 0));
+  EXPECT_EQ(0, rgba_geta(get_pixel(dst.get(), 1, 0)));
+}
+
+TEST(Render, RefViewRefOnlyHidesIndexedBackgroundColor)
+{
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
+  doc->sprites().add(Sprite::MakeStdSprite(ImageSpec(ColorMode::INDEXED, 2, 1)));
+  Sprite* sprite = doc->sprite();
+  sprite->palette(0)->setEntry(0, rgba(10, 20, 30, 255));
+  sprite->palette(0)->setEntry(1, rgba(0, 0, 255, 255));
+
+  auto* bg = static_cast<LayerImage*>(sprite->root()->firstLayer());
+  bg->configureAsBackground();
+  clear_image(bg->cel(0)->image(), 0);
+
+  // Reference layer: palette index 1 at x=1
+  auto* ref = new LayerImage(sprite);
+  sprite->root()->addLayer(ref);
+  ref->setReference(true);
+  ImageRef refImage(Image::create(IMAGE_INDEXED, 2, 1));
+  clear_image(refImage.get(), 0);
+  put_pixel(refImage.get(), 1, 0, 1);
+  ref->addCel(new Cel(0, refImage));
+
+  std::unique_ptr<Image> dst(Image::create(IMAGE_RGB, 2, 1));
+  Render render;
+  render.setRefLayersVisiblity(true);
+  render.setRefView(RefView::RefOnly);
+  render.renderSprite(dst.get(), sprite, frame_t(0));
+
+  // No opaque background color behind the reference layer
+  EXPECT_EQ(0, rgba_geta(get_pixel(dst.get(), 0, 0)));
+  EXPECT_EQ(rgba(0, 0, 255, 255), get_pixel(dst.get(), 1, 0));
+}
+
 TEST(Render, BugWithMultiplesOf3ZoomFactors)
 {
   std::shared_ptr<Document> doc = std::make_shared<Document>();

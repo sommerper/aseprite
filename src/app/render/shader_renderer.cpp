@@ -111,6 +111,11 @@ void ShaderRenderer::setRefOverlayOpacity(const int opacity)
   // TODO impl
 }
 
+void ShaderRenderer::setRefView(const render::RefView refView)
+{
+  // TODO impl
+}
+
 void ShaderRenderer::setNewBlendMethod(const bool newBlend)
 {
   // TODO impl

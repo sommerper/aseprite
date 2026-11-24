@@ -71,6 +71,11 @@ void EditorRender::setRefOverlayOpacity(const int opacity)
   m_renderer->setRefOverlayOpacity(opacity);
 }
 
+void EditorRender::setRefView(const render::RefView refView)
+{
+  m_renderer->setRefView(refView);
+}
+
 void EditorRender::setNewBlendMethod(const bool newBlend)
 {
   m_renderer->setNewBlendMethod(newBlend);

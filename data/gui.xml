@@ -328,6 +328,10 @@
         <param name="checkedIfZero" value="true" />
       </key>
       <key command="ToggleReferenceOverlay" shortcut="Alt+Shift+R" />
+      <key command="ReferenceView" shortcut="Alt+Shift+F" />
+      <key command="ReferenceView" shortcut="Alt+Shift+A">
+        <param name="mode" value="all" />
+      </key>
 
       <!-- Scroll to center -->
       <key command="ScrollCenter" shortcut="Shift+Z" />
@@ -1056,6 +1060,10 @@
         <item command="SetLoopSection" text="@.view_set_loop_section" />
         <item command="ShowOnionSkin" text="@.view_show_onion_skin" group="view_animation_helpers" />
         <item command="ToggleReferenceOverlay" text="@.view_ref_overlay" />
+        <item command="ReferenceView" text="@.view_ref_view_flip" />
+        <item command="ReferenceView" text="@.view_ref_view_all">
+          <param name="mode" value="all" />
+        </item>
         <separator />
         <item command="Timeline" text="@.view_timeline">
           <param name="switch" value="true" />

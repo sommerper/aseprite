@@ -23,6 +23,7 @@
 #include "render/extra_type.h"
 #include "render/onionskin_options.h"
 #include "render/projection.h"
+#include "render/ref_view.h"
 
 #include <unordered_set>
 
@@ -63,6 +64,7 @@ public:
   // Layers above the topmost visible reference layer are composed
   // into one image and blended with this opacity (255 = disabled).
   void setRefOverlayOpacity(const int opacity);
+  void setRefView(const RefView refView);
   void setNewBlend(const bool newBlend);
   void setComposeGroups(bool composeGroup);
   void setProjection(const Projection& projection);
@@ -187,6 +189,7 @@ private:
   int m_flags;
   int m_nonactiveLayersOpacity;
   int m_refOverlayOpacity = 255;
+  RefView m_refView = RefView::All;
   // Which layers renderPlan() draws when the reference overlay is
   // active: all, only up to the topmost reference, or only above it.
   enum class OverlayPass { All, BelowRef, AboveRef };

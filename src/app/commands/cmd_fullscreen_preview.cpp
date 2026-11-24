@@ -170,6 +170,7 @@ protected:
     EditorRender& render = m_editor->renderEngine();
     render.setRefLayersVisiblity(false);
     render.setRefOverlayOpacity(255);
+    render.setRefView(render::RefView::All);
     render.disableOnionskin();
     render.setTransparentBackground();
 

@@ -582,6 +582,11 @@ void Render::setRefOverlayOpacity(const int opacity)
   m_refOverlayOpacity = opacity;
 }
 
+void Render::setRefView(const RefView refView)
+{
+  m_refView = refView;
+}
+
 void Render::setNewBlend(const bool newBlend)
 {
   m_newBlendMethod = newBlend;
@@ -703,7 +708,9 @@ void Render::renderSprite(Image* dstImage,
   if (!compositeImage)
     return;
 
-  const LayerImage* bgLayer = m_sprite->backgroundLayer();
+  // The Background layer isn't displayed when only reference layers are shown
+  const LayerImage* bgLayer = (m_refView == RefView::RefOnly ? nullptr :
+                                                               m_sprite->backgroundLayer());
   color_t bg_color = 0;
   if (m_sprite->pixelFormat() == IMAGE_INDEXED) {
     switch (dstImage->pixelFormat()) {
@@ -1033,6 +1040,11 @@ void Render::renderPlan(RenderPlan& plan,
     // Groups are always entered, their children are filtered.
     if (m_overlayPass != OverlayPass::All && !layer->isGroup() &&
         (m_overlayLayers.count(layer) > 0) != (m_overlayPass == OverlayPass::AboveRef)) {
+      continue;
+    }
+
+    if (m_refView != RefView::All && !layer->isGroup() &&
+        layer->isReference() != (m_refView == RefView::RefOnly)) {
       continue;
     }
 

@@ -33,6 +33,7 @@
 #include "obs/connection.h"
 #include "os/color_space.h"
 #include "render/projection.h"
+#include "render/ref_view.h"
 #include "render/zoom.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
@@ -286,6 +287,11 @@ public:
 
   static EditorRender& renderEngine() { return *m_renderEngine; }
 
+  // View-only filter to show only reference layers or only the other
+  // layers in all editors (except the preview window).
+  static render::RefView refView() { return m_refView; }
+  static void setRefView(render::RefView refView);
+
   // IColorSource
   app::Color getColorByPosition(const gfx::Point& pos) override;
 
@@ -534,6 +540,7 @@ private:
   static std::unique_ptr<EditorRender> m_renderEngine;
 
   CanvasRotation m_canvasRotation;
+  static render::RefView m_refView;
 
   // Used for selection tool feedback.
   // TODO move this to SelectionToolLoopImpl

@@ -39,6 +39,7 @@ public:
   void setRefLayersVisiblity(const bool visible) override;
   void setNonactiveLayersOpacity(const int opacity) override;
   void setRefOverlayOpacity(const int opacity) override;
+  void setRefView(const render::RefView refView) override;
   void setNewBlendMethod(const bool newBlend) override;
   void setComposeGroups(const bool composeGroups) override;
   void setBgOptions(const render::BgOptions& bg) override;

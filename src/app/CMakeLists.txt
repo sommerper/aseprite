@@ -524,6 +524,7 @@ target_sources(app-lib PRIVATE
   commands/move_tiles_command.cpp
   commands/new_params.cpp
   commands/quick_command.cpp
+  commands/reference_view.cpp
   commands/screenshot.cpp
   commands/set_playback_speed.cpp
   commands/show_menu.cpp

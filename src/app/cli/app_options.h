@@ -94,6 +94,7 @@ public:
   const Option& listSlices() const { return m_listSlices; }
   const Option& oneFrame() const { return m_oneFrame; }
   const Option& exportTileset() const { return m_exportTileset; }
+  const Option& centerOnSlice() const { return m_centerOnSlice; }
 
   bool hasExporterParams() const;
 #ifdef ENABLE_STEAM
@@ -170,6 +171,7 @@ private:
   Option& m_listSlices;
   Option& m_oneFrame;
   Option& m_exportTileset;
+  Option& m_centerOnSlice;
 
   Option& m_verbose;
   Option& m_debug;

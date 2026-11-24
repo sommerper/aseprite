@@ -166,6 +166,10 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_oneFrame(m_po.add("oneframe").description("Load just the first frame"))
   , m_exportTileset(
       m_po.add("export-tileset").description("Export only tilesets from visible tilemap layers"))
+  , m_centerOnSlice(
+      m_po.add("center-on-slice")
+        .requiresValue("<name>")
+        .description("Zoom and center the editor on the given slice\n(only in UI mode)"))
   , m_verbose(m_po.add("verbose").mnemonic('v').description("Explain what is being done"))
   , m_debug(m_po.add("debug").description("Extreme verbose mode and\ncopy log to desktop"))
 #ifdef ENABLE_STEAM

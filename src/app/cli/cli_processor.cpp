@@ -22,6 +22,7 @@
 #include "app/file/file.h"
 #include "app/filename_formatter.h"
 #include "app/restore_visible_layers.h"
+#include "app/ui/editor/focus_slice.h"
 #include "app/ui_context.h"
 #include "app/util/layer_utils.h"
 #include "base/convert_to.h"
@@ -178,6 +179,7 @@ int CliProcessor::process(Context* ctx)
 #endif
     Console console;
     CliOpenFile cof;
+    std::string centerOnSlice; // --center-on-slice (UI only)
     SpriteSheetType sheetType = SpriteSheetType::None;
     Doc* lastDoc = nullptr;
     render::DitheringAlgorithm ditheringAlgorithm = render::DitheringAlgorithm::None;
@@ -593,6 +595,10 @@ int CliProcessor::process(Context* ctx)
         else if (opt == &m_options.exportTileset()) {
           cof.exportTileset = true;
         }
+        // --center-on-slice <slice>
+        else if (opt == &m_options.centerOnSlice()) {
+          centerOnSlice = value.value();
+        }
       }
       // File names aren't associated to any option
       else {
@@ -625,6 +631,9 @@ int CliProcessor::process(Context* ctx)
       m_delegate->exportFiles(ctx, *m_exporter.get());
       m_exporter.reset(nullptr);
     }
+
+    if (ctx->isUIAvailable() && !centerOnSlice.empty())
+      focus_slice_in_editor(centerOnSlice);
   }
 
   // Running mode

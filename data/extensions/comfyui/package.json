@@ -1,0 +1,12 @@
+{
+  "name": "comfyui",
+  "displayName": "ComfyUI",
+  "description": "Runs the local ComfyUI pixel-art workflows on the selection (Edit > ComfyUI...)",
+  "version": "1.0",
+  "author": { "name": "Per Sommer" },
+  "contributes": {
+    "scripts": [
+      { "path": "./comfyui.lua" }
+    ]
+  }
+}

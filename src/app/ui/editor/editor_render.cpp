@@ -66,6 +66,11 @@ void EditorRender::setNonactiveLayersOpacity(const int opacity)
   m_renderer->setNonactiveLayersOpacity(opacity);
 }
 
+void EditorRender::setRefOverlayOpacity(const int opacity)
+{
+  m_renderer->setRefOverlayOpacity(opacity);
+}
+
 void EditorRender::setNewBlendMethod(const bool newBlend)
 {
   m_renderer->setNewBlendMethod(newBlend);

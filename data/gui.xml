@@ -327,6 +327,7 @@
         <param name="preview" value="true" />
         <param name="checkedIfZero" value="true" />
       </key>
+      <key command="ToggleReferenceOverlay" shortcut="Alt+Shift+R" />
 
       <!-- Scroll to center -->
       <key command="ScrollCenter" shortcut="Shift+Z" />
@@ -1054,6 +1055,7 @@
         <separator />
         <item command="SetLoopSection" text="@.view_set_loop_section" />
         <item command="ShowOnionSkin" text="@.view_show_onion_skin" group="view_animation_helpers" />
+        <item command="ToggleReferenceOverlay" text="@.view_ref_overlay" />
         <separator />
         <item command="Timeline" text="@.view_timeline">
           <param name="switch" value="true" />

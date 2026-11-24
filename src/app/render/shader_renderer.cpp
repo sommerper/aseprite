@@ -106,6 +106,11 @@ void ShaderRenderer::setNonactiveLayersOpacity(const int opacity)
   // TODO impl
 }
 
+void ShaderRenderer::setRefOverlayOpacity(const int opacity)
+{
+  // TODO impl
+}
+
 void ShaderRenderer::setNewBlendMethod(const bool newBlend)
 {
   // TODO impl

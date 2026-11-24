@@ -24,6 +24,8 @@
 #include "render/onionskin_options.h"
 #include "render/projection.h"
 
+#include <unordered_set>
+
 namespace doc {
 class Cel;
 class Image;
@@ -58,6 +60,9 @@ public:
 
   void setRefLayersVisiblity(const bool visible);
   void setNonactiveLayersOpacity(const int opacity);
+  // Layers above the topmost visible reference layer are composed
+  // into one image and blended with this opacity (255 = disabled).
+  void setRefOverlayOpacity(const int opacity);
   void setNewBlend(const bool newBlend);
   void setComposeGroups(bool composeGroup);
   void setProjection(const Projection& projection);
@@ -181,6 +186,13 @@ private:
 
   int m_flags;
   int m_nonactiveLayersOpacity;
+  int m_refOverlayOpacity = 255;
+  // Which layers renderPlan() draws when the reference overlay is
+  // active: all, only up to the topmost reference, or only above it.
+  enum class OverlayPass { All, BelowRef, AboveRef };
+  OverlayPass m_overlayPass = OverlayPass::All;
+  // Image layers above the topmost visible reference layer
+  std::unordered_set<const Layer*> m_overlayLayers;
   const Sprite* m_sprite;
   const Layer* m_currentLayer;
   frame_t m_currentFrame;

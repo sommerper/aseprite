@@ -209,6 +209,10 @@ Editor::Editor(Doc* document, EditorFlags flags, EditorStatePtr state)
   m_symmetryModeConn = Preferences::instance().symmetryMode.enabled.AfterChange.connect(
     [this] { invalidateIfActive(); });
   m_showExtrasConn = m_docPref.show.AfterChange.connect([this] { onShowExtrasChange(); });
+  m_refOverlayEnabledConn = Preferences::instance().editor.refOverlayEnabled.AfterChange.connect(
+    [this] { invalidate(); });
+  m_refOverlayOpacityConn = Preferences::instance().editor.refOverlayOpacity.AfterChange.connect(
+    [this] { invalidate(); });
 
   m_document->add_observer(this);
 
@@ -693,6 +697,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
     m_renderEngine->setRefLayersVisiblity(true);
     m_renderEngine->setSelectedLayer(m_layer);
     m_renderEngine->setNonactiveLayersOpacity(otherLayersOpacity());
+    // The preview window shows the real result, without the overlay opacity
+    m_renderEngine->setRefOverlayOpacity(
+      (pref.editor.refOverlayEnabled() && !(m_docView && m_docView->isPreview())) ?
+        (std::clamp(pref.editor.refOverlayOpacity(), 0, 100) * 255 + 50) / 100 :
+        255);
     m_renderEngine->setupBackground(m_document, IMAGE_RGB);
     m_renderEngine->disableOnionskin();
 

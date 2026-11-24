@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <cmath>
 #include <numeric>
+#include <vector>
 
 namespace app {
 
@@ -117,15 +118,27 @@ render::Zoom zoom_from_scale(double scale)
 class RightAlign : public Widget {
 public:
   // Transparent: it paints nothing, so the context bar must paint behind it.
-  explicit RightAlign(Widget* widget) : m_widget(widget) { setTransparent(true); }
+  explicit RightAlign(std::initializer_list<Widget*> widgets) : m_widgets(widgets)
+  {
+    setTransparent(true);
+  }
 
 private:
   void onSizeHint(SizeHintEvent& ev) override
   {
-    ev.setSizeHint(std::max(0, ev.fitInWidth() - m_widget->sizeHint().w), 0);
+    int w = 0;
+    for (Widget* widget : m_widgets) {
+      if (widget) {
+        // Spacing between the previous widget and this one
+        if (w > 0 && parent())
+          w += parent()->childSpacing();
+        w += widget->sizeHint().w;
+      }
+    }
+    ev.setSizeHint(std::max(0, ev.fitInWidth() - w), 0);
   }
 
-  Widget* m_widget;
+  std::vector<Widget*> m_widgets;
 };
 
 // Pinch-like gesture with one finger fixed at the viewport center:
@@ -393,7 +406,9 @@ void CanvasRotation::showDeadZone(Editor* editor, bool show)
 }
 
 // static
-void CanvasRotation::addResetButton(ui::Widget* contextBar, ui::TooltipManager* tooltips)
+void CanvasRotation::addResetButton(ui::Widget* contextBar,
+                                    ui::TooltipManager* tooltips,
+                                    ui::Widget* leftOfButton)
 {
   auto* button = new IconButton(skin::SkinTheme::get(contextBar)->parts.arrowCircleCw());
   button->InitTheme.connect(
@@ -404,7 +419,9 @@ void CanvasRotation::addResetButton(ui::Widget* contextBar, ui::TooltipManager* 
   });
   tooltips->addTooltipFor(button, "Reset canvas rotation", BOTTOM);
 
-  contextBar->addChild(new RightAlign(button));
+  contextBar->addChild(new RightAlign({ leftOfButton, button }));
+  if (leftOfButton)
+    contextBar->addChild(leftOfButton);
   contextBar->addChild(button);
 }
 

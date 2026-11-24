@@ -189,6 +189,8 @@
       <option id="zoom_from_center_with_keys" type="bool" default="false" />
       <option id="invert_brush_size_wheel" type="bool" default="false" />
       <option id="show_scrollbars" type="bool" default="true" />
+      <option id="ref_overlay_enabled" type="bool" default="false" />
+      <option id="ref_overlay_opacity" type="int" default="50" />
       <option id="auto_scroll" type="bool" default="true" />
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" />
       <option id="auto_select_layer" type="bool" default="false" />

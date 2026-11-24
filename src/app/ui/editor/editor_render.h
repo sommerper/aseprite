@@ -54,6 +54,7 @@ public:
 
   void setRefLayersVisiblity(const bool visible);
   void setNonactiveLayersOpacity(const int opacity);
+  void setRefOverlayOpacity(const int opacity);
   void setNewBlendMethod(const bool newBlend);
   void setComposeGroups(bool composeGroups);
 

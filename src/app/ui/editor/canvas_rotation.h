@@ -111,8 +111,11 @@ public:
   // True if "msg" presses the "rotate_canvas" quicktool shortcut.
   static bool isQuicktoolPressed(const ui::Message* msg);
 
-  // Adds the "reset rotation" button at the end of the context bar.
-  static void addResetButton(ui::Widget* contextBar, ui::TooltipManager* tooltips);
+  // Adds the "reset rotation" button at the end of the context bar,
+  // right-aligned together with "leftOfButton" (optional).
+  static void addResetButton(ui::Widget* contextBar,
+                             ui::TooltipManager* tooltips,
+                             ui::Widget* leftOfButton = nullptr);
 
   // Shows the gesture dead zone while the "rotate_canvas" tool is active.
   void onActiveToolChange(Editor* editor, const tools::Tool* tool);

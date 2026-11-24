@@ -169,6 +169,7 @@ protected:
     Graphics* g = ev.graphics();
     EditorRender& render = m_editor->renderEngine();
     render.setRefLayersVisiblity(false);
+    render.setRefOverlayOpacity(255);
     render.disableOnionskin();
     render.setTransparentBackground();
 

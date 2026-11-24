@@ -16,11 +16,14 @@
 #include "doc/cel.h"
 #include "doc/document.h"
 #include "doc/image.h"
+#include "doc/image_ref.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
+#include "doc/sprite.h"
 
 #include <memory>
+#include <vector>
 
 using namespace doc;
 using namespace render;
@@ -196,6 +199,68 @@ TEST(Render, ZoomAndDstBounds)
 
   render.renderSprite(dst.get(), doc->sprite(), frame_t(0), gfx::Clip(1, 1, 0, 0, 2, 2));
   EXPECT_4X4_PIXELS(dst.get(), 0, 0, 0, 0, 0, 1, 2, 0, 0, 2, 4, 0, 0, 0, 0, 0);
+}
+
+// Layers (bottom to top): green at x=2, reference, red at x=0-1, red
+// at x=0. With "inGroup" the reference and the first red layer are
+// inside a group.
+static void test_ref_overlay_opacity(const bool composeGroups, const bool inGroup)
+{
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
+  doc->sprites().add(Sprite::MakeStdSprite(ImageSpec(ColorMode::RGB, 3, 1)));
+  Sprite* sprite = doc->sprite();
+
+  Image* bottom = sprite->root()->firstLayer()->cel(0)->image();
+  clear_image(bottom, 0);
+  put_pixel(bottom, 2, 0, rgba(0, 255, 0, 255));
+
+  LayerGroup* group = sprite->root();
+  if (inGroup) {
+    group = new LayerGroup(sprite);
+    sprite->root()->addLayer(group);
+  }
+
+  auto addLayer = [sprite](LayerGroup* parent, const std::vector<int>& redPixels) {
+    auto* layer = new LayerImage(sprite);
+    parent->addLayer(layer);
+    ImageRef image(Image::create(IMAGE_RGB, 3, 1));
+    clear_image(image.get(), 0);
+    for (int x : redPixels)
+      put_pixel(image.get(), x, 0, rgba(255, 0, 0, 255));
+    layer->addCel(new Cel(0, image));
+    return layer;
+  };
+
+  addLayer(group, {})->setReference(true);
+  addLayer(group, { 0, 1 });
+  addLayer(sprite->root(), { 0 });
+
+  std::unique_ptr<Image> dst(Image::create(IMAGE_RGB, 3, 1));
+  Render render;
+  render.setComposeGroups(composeGroups);
+  render.setRefOverlayOpacity(128);
+  render.renderSprite(dst.get(), sprite, frame_t(0));
+
+  // Overlapping red pixels look like one merged layer at 50%
+  EXPECT_EQ(rgba(255, 0, 0, 128), get_pixel(dst.get(), 0, 0));
+  EXPECT_EQ(rgba(255, 0, 0, 128), get_pixel(dst.get(), 1, 0));
+  // Layers below the reference are not affected
+  EXPECT_EQ(rgba(0, 255, 0, 255), get_pixel(dst.get(), 2, 0));
+
+  render.setRefOverlayOpacity(255);
+  render.renderSprite(dst.get(), sprite, frame_t(0));
+  EXPECT_EQ(rgba(255, 0, 0, 255), get_pixel(dst.get(), 0, 0));
+}
+
+TEST(Render, RefOverlayOpacityMergesLayersAboveReference)
+{
+  test_ref_overlay_opacity(false, false);
+}
+
+TEST(Render, RefOverlayOpacityWithReferenceInsideGroup)
+{
+  test_ref_overlay_opacity(false, true);
+  test_ref_overlay_opacity(true, true);
 }
 
 TEST(Render, BugWithMultiplesOf3ZoomFactors)

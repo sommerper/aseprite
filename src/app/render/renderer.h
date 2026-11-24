@@ -60,6 +60,7 @@ public:
 
   virtual void setRefLayersVisiblity(const bool visible) = 0;
   virtual void setNonactiveLayersOpacity(const int opacity) = 0;
+  virtual void setRefOverlayOpacity(const int opacity) = 0;
   virtual void setNewBlendMethod(const bool newBlend) = 0;
   virtual void setComposeGroups(bool composeGroups) = 0;
   virtual void setBgOptions(const render::BgOptions& bg) = 0;

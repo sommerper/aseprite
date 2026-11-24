@@ -528,6 +528,19 @@ bool has_visible_reference_layers(const LayerGroup* group)
   return false;
 }
 
+// Appends the visible image layers of the group in bottom-to-top order.
+void collect_visible_image_layers(const LayerGroup* group, std::vector<const Layer*>& layers)
+{
+  for (const Layer* child : group->layers()) {
+    if (!child->isVisible())
+      continue;
+    if (child->isGroup())
+      collect_visible_image_layers(static_cast<const LayerGroup*>(child), layers);
+    else
+      layers.push_back(child);
+  }
+}
+
 } // anonymous namespace
 
 Render::Render()
@@ -562,6 +575,11 @@ void Render::setRefLayersVisiblity(const bool visible)
 void Render::setNonactiveLayersOpacity(const int opacity)
 {
   m_nonactiveLayersOpacity = opacity;
+}
+
+void Render::setRefOverlayOpacity(const int opacity)
+{
+  m_refOverlayOpacity = opacity;
 }
 
 void Render::setNewBlend(const bool newBlend)
@@ -770,7 +788,43 @@ void Render::renderSpriteLayers(Image* dstImage,
 
   // Draw the transparent layers.
   m_globalOpacity = 255;
+
+  // Layers above the topmost visible reference layer (even inside
+  // composed groups) are rendered into their own image and then
+  // blended with m_refOverlayOpacity, so they look like one merged
+  // layer (overlapping pixels don't show through each other).
+  m_overlayLayers.clear();
+  if (m_refOverlayOpacity < 255) {
+    std::vector<const Layer*> layers;
+    collect_visible_image_layers(m_sprite->root(), layers);
+    auto ref = std::find_if(layers.rbegin(), layers.rend(), [](const Layer* layer) {
+      return layer->isReference();
+    });
+    if (ref != layers.rend())
+      m_overlayLayers.insert(ref.base(), layers.end());
+  }
+
+  if (m_overlayLayers.empty()) {
+    renderPlan(plan, dstImage, area, frame, compositeImage, false, true, BlendMode::UNSPECIFIED);
+    return;
+  }
+
+  m_overlayPass = OverlayPass::BelowRef;
   renderPlan(plan, dstImage, area, frame, compositeImage, false, true, BlendMode::UNSPECIFIED);
+
+  ImageRef overlay(Image::create(dstImage->pixelFormat(), dstImage->width(), dstImage->height()));
+  overlay->clear(0);
+  m_overlayPass = OverlayPass::AboveRef;
+  renderPlan(plan, overlay.get(), area, frame, compositeImage, false, true, BlendMode::UNSPECIFIED);
+  m_overlayPass = OverlayPass::All;
+
+  composite_image(dstImage,
+                  overlay.get(),
+                  m_sprite->palette(frame),
+                  0,
+                  0,
+                  m_refOverlayOpacity,
+                  BlendMode::NORMAL);
 }
 
 void Render::renderBackground(Image* image,
@@ -975,6 +1029,12 @@ void Render::renderPlan(RenderPlan& plan,
   for (const auto& item : plan.items()) {
     const Cel* cel = item.cel;
     const Layer* layer = item.layer;
+
+    // Groups are always entered, their children are filtered.
+    if (m_overlayPass != OverlayPass::All && !layer->isGroup() &&
+        (m_overlayLayers.count(layer) > 0) != (m_overlayPass == OverlayPass::AboveRef)) {
+      continue;
+    }
 
     ASSERT(layer->isVisible()); // Hidden layers shouldn't be in the plan
 

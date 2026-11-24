@@ -32,6 +32,11 @@ void SimpleRenderer::setNonactiveLayersOpacity(const int opacity)
   m_render.setNonactiveLayersOpacity(opacity);
 }
 
+void SimpleRenderer::setRefOverlayOpacity(const int opacity)
+{
+  m_render.setRefOverlayOpacity(opacity);
+}
+
 void SimpleRenderer::setNewBlendMethod(const bool newBlend)
 {
   m_render.setNewBlend(newBlend);

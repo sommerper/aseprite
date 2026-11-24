@@ -461,6 +461,8 @@ private:
   obs::scoped_connection m_fgColorChangeConn;
   obs::scoped_connection m_contextBarBrushChangeConn;
   obs::scoped_connection m_showExtrasConn;
+  obs::scoped_connection m_refOverlayEnabledConn;
+  obs::scoped_connection m_refOverlayOpacityConn;
 
   // Slots listening document preferences.
   obs::scoped_connection m_tiledConnBefore;

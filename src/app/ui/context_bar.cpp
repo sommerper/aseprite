@@ -50,6 +50,7 @@
 #include "app/ui/layer_frame_comboboxes.h"
 #include "app/ui/sampling_selector.h"
 #include "app/ui/selection_mode_field.h"
+#include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/pi.h"
@@ -94,6 +95,69 @@ using namespace ui;
 using namespace tools;
 
 static bool g_updatingFromCode = false;
+
+namespace {
+
+// On/off checkbox + opacity slider to fade the layers above the
+// topmost reference layer (see the ToggleReferenceOverlay command).
+class RefOverlayField : public HBox,
+                        public SliderDelegate {
+public:
+  explicit RefOverlayField(TooltipManager* tooltips)
+    : m_check(new CheckBox(Strings::context_bar_ref_overlay()))
+    , m_slider(new Slider(0, 100, Preferences::instance().editor.refOverlayOpacity(), this))
+  {
+    auto& pref = Preferences::instance().editor;
+
+    m_check->setSelected(pref.refOverlayEnabled());
+    m_check->InitTheme.connect(
+      [this] { m_check->setStyle(SkinTheme::get(m_check)->styles.miniCheckBox()); });
+    m_check->initTheme();
+    m_check->Click.connect([this] {
+      Preferences::instance().editor.refOverlayEnabled(m_check->isSelected());
+      m_check->releaseFocus();
+    });
+
+    get_skin_property(m_slider)->setLook(MiniLook);
+    m_slider->InitTheme.connect([this] { m_slider->setMinSize(gfx::Size(64 * guiscale(), 0)); });
+    m_slider->initTheme();
+    // Moving the slider turns the fading on
+    m_slider->Change.connect([this] {
+      auto& pref = Preferences::instance().editor;
+      pref.refOverlayOpacity(m_slider->getValue());
+      pref.refOverlayEnabled(true);
+    });
+
+    m_enabledConn = pref.refOverlayEnabled.AfterChange.connect([this] {
+      m_check->setSelected(Preferences::instance().editor.refOverlayEnabled());
+    });
+    m_opacityConn = pref.refOverlayOpacity.AfterChange.connect([this] {
+      const int value = Preferences::instance().editor.refOverlayOpacity();
+      if (m_slider->getValue() != value)
+        m_slider->setValue(value);
+    });
+
+    const std::string tooltip = key_tooltip(Strings::context_bar_ref_overlay_tooltip().c_str(),
+                                            CommandId::ToggleReferenceOverlay());
+    tooltips->addTooltipFor(m_check, tooltip, BOTTOM);
+    tooltips->addTooltipFor(m_slider, tooltip, BOTTOM);
+
+    addChild(m_check);
+    addChild(m_slider);
+  }
+
+private:
+  // SliderDelegate impl
+  std::string onGetTextFromValue(int value) override { return fmt::format("{}%", value); }
+  int onGetValueFromText(const std::string& text) override { return std::atoi(text.c_str()); }
+
+  CheckBox* m_check;
+  Slider* m_slider;
+  obs::scoped_connection m_enabledConn;
+  obs::scoped_connection m_opacityConn;
+};
+
+} // anonymous namespace
 
 class ContextBar::ZoomButtons : public ButtonSet {
 public:
@@ -2085,7 +2149,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
 
   addChild(m_sliceFields = new SliceFields);
   addChild(m_fontSelector = new FontSelector(this));
-  CanvasRotation::addResetButton(this, tooltipManager);
+  CanvasRotation::addResetButton(this, tooltipManager, new RefOverlayField(tooltipManager));
 
   setupTooltips(tooltipManager);
 

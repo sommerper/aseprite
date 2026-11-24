@@ -15,6 +15,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/input_chain.h"
 
 namespace app {
@@ -61,6 +62,12 @@ void CancelCommand::onExecute(Context* context)
       break;
 
     case All:
+      // First Esc only leaves the reference/other layers flip view
+      if (context->isUIAvailable() && Editor::refView() != render::RefView::All) {
+        Editor::setRefView(render::RefView::All);
+        break;
+      }
+
       // TODO should the ContextBar be a InputChainElement to intercept onCancel()?
       // Discard brush
       if (context->isUIAvailable()) {
